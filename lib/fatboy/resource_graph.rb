@@ -3,7 +3,8 @@ require 'rosarium'
 module Fatboy
   class ResourceGraph
 
-    def initialize
+    def initialize(context)
+      @context = context
       @resources = {}
       @depends_on = {}
       @mutex = Mutex.new
@@ -35,9 +36,9 @@ module Fatboy
 
     def dump
       @resources.keys.sort.each do |k|
-        puts "#{k} #{@resources[k]}"
+        @context.logger.puts "#{k} #{@resources[k]}"
         (@depends_on[k] || []).sort.each do |dep|
-          puts "  depends on #{dep}"
+          @context.logger.puts "  depends on #{dep}"
         end
       end
     end
@@ -89,11 +90,11 @@ module Fatboy
 
           promises[k] = parent.then do
             begin
-              puts "STARTING #{method} #{k}"
+              @context.logger.puts "STARTING #{method} #{k}"
               @resources[k].send(method)
-              puts "SUCCESS #{method} #{k}"
+              @context.logger.puts "SUCCESS #{method} #{k}"
             rescue Exception => e
-              puts "FAILURE #{method} #{k}"
+              @context.logger.puts "FAILURE #{method} #{k}"
               raise
             end
           end
@@ -108,9 +109,9 @@ module Fatboy
         Rosarium::Promise.all_settled(promises.values).then do |l|
           promises.each_entry do |k, v|
             if v.rejected?
-              puts "FAILED: #{k} #{v.reason}"
+              @context.logger.puts "FAILED: #{k} #{v.reason}"
             else
-              puts "SUCCEEDED: #{k}"
+              @context.logger.puts "SUCCEEDED: #{k}"
             end
           end
           raise e

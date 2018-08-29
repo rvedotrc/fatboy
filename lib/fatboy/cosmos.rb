@@ -1,4 +1,5 @@
 require 'json'
+require 'weakref'
 
 module Fatboy
   module Cosmos
@@ -15,7 +16,8 @@ module Fatboy
 
     class Client
 
-      def initialize(forge_helper, cosmos_instance)
+      def initialize(context, forge_helper, cosmos_instance)
+        @context = WeakRef.new(context)
         @forge_helper = forge_helper
         @cosmos_instance = cosmos_instance
       end
@@ -76,7 +78,7 @@ module Fatboy
         begin
           while true
             deployment = JSON.parse(@forge_helper.connect(deployment_url).get.body)
-            puts "cosmos lambda deployment #{deployment["component"]["name"]}" \
+            @context.logger.puts "cosmos lambda deployment #{deployment["component"]["name"]}" \
               + " release #{deployment["release"]["version"]}" \
               + " to #{deployment["environment"]["name"]}" \
               + " : #{deployment["status"]}"

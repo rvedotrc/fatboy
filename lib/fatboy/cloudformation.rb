@@ -1,3 +1,5 @@
+require 'weakref'
+
 module Fatboy
   module CloudFormation
 
@@ -11,6 +13,10 @@ module Fatboy
     end
 
     class JunkDrawer
+
+      def initialize(context)
+        @context = WeakRef.new(context)
+      end
 
       def delete_if_exists(cf_client, stack_name_or_id)
         stack_id = begin
@@ -43,11 +49,11 @@ module Fatboy
               stack_name: stack_name_or_id,
             )
           rescue Aws::CloudFormation::Errors::Throttling => e
-            puts "Error describing stack #{stack_name_or_id}: #{e}"
+            @context.logger.puts "Error describing stack #{stack_name_or_id}: #{e}"
             sleep 5
             retry
           end
-          puts description.stacks[0].stack_status + " " + description.stacks[0].stack_name
+          @context.logger.puts description.stacks[0].stack_status + " " + description.stacks[0].stack_name
 
           case description.stacks[0].stack_status
           when /IN_PROGRESS/

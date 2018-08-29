@@ -11,14 +11,15 @@ context = Fatboy::Context.new
 context.forge_helper = ForgeHelper.new
 # Dependency: the live Cosmos service
 context.cosmos_instance = Fatboy::Cosmos::LiveInstance
-context.cosmos_client = Fatboy::Cosmos::Client.new(context.forge_helper, context.cosmos_instance)
+context.cosmos_client = Fatboy::Cosmos::Client.new(context, context.forge_helper, context.cosmos_instance)
 # Dependency: the live Wormhole service
 context.wormhole = Fatboy::Wormhole.new
-context.cloudformation = Fatboy::CloudFormation::JunkDrawer.new
+context.cloudformation = Fatboy::CloudFormation::JunkDrawer.new(context)
 context.spud = Fatboy::Spud.new
-context.scm_helper = Fatboy::ScmHelper.new
+context.scm_helper = Fatboy::ScmHelper.new(context)
+context.logger = Fatboy::Logger.new
 
-resource_graph = Fatboy::ResourceGraph.new
+resource_graph = Fatboy::ResourceGraph.new(context)
 
 ################################################################################
 
@@ -53,7 +54,7 @@ end
 
 ################################################################################
 
-# puts resource_graph.to_graphviz.to_s
+# context.logger.puts resource_graph.to_graphviz.to_s
 # resource_graph.to_graphviz.output(dot: "/dev/stdout")
 # exit
 
@@ -62,13 +63,13 @@ inverted.dump
 $stdout.print "Press return to continue..."
 $stdin.gets
 inverted.make_promise(:teardown).value!
-puts ""
+context.logger.puts ""
 
 resource_graph.dump
 $stdout.print "Press return to continue..."
 $stdin.gets
 resource_graph.make_promise(:setup).value!
-puts ""
+context.logger.puts ""
 
 exit
 

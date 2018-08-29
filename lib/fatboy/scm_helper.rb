@@ -1,9 +1,11 @@
 require 'fileutils'
+require 'weakref'
 
 module Fatboy
   class ScmHelper
 
-    def initialize
+    def initialize(context)
+      @context = WeakRef.new(context)
       @base_dir = '/tmp/fatboy/git_clones'
     end
 
@@ -22,15 +24,24 @@ module Fatboy
       FileUtils.rm_rf dir
       FileUtils.mkdir_p @base_dir
 
-      puts "git clone #{git_url} #{dir}"
-      system "git", "clone", git_url, dir
+      @context.logger.puts "git clone #{git_url} #{dir}"
+      Process.wait(
+        Process.spawn(
+          "git", "clone", git_url, dir,
+          in: '/dev/null',
+          out: @context.logger.to_pipe,
+          err: @context.logger.to_pipe,
+        )
+      )
       $?.success? or raise "git clone #{git_url} failed"
 
-      puts "git checkout #{git_revision}"
+      @context.logger.puts "git checkout #{git_revision}"
       Process.wait(
         Process.spawn(
           "git", "checkout", git_revision,
           in: '/dev/null',
+          out: @context.logger.to_pipe,
+          err: @context.logger.to_pipe,
           chdir: dir,
         )
       )
