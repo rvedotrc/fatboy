@@ -1,0 +1,75 @@
+#!/usr/bin/env ruby
+# vi: set ts=2 sw=2 :
+
+$stdout.sync = true
+$: << "lib"
+require 'fatboy'
+require 'forge-helper'
+
+context = Fatboy::Context.new
+# Dependency: developer certificate
+context.forge_helper = ForgeHelper.new
+# Dependency: the live Cosmos service
+context.cosmos_instance = Fatboy::Cosmos::LiveInstance
+context.cosmos_client = Fatboy::Cosmos::Client.new(context.forge_helper, context.cosmos_instance)
+# Dependency: the live Wormhole service
+context.wormhole = Fatboy::Wormhole.new
+context.cloudformation = Fatboy::CloudFormation::JunkDrawer.new
+context.spud = Fatboy::Spud.new
+context.scm_helper = Fatboy::ScmHelper.new
+
+resource_graph = Fatboy::ResourceGraph.new
+
+################################################################################
+
+require 'fatboy/components/clive-diva-ingester'
+require 'fatboy/components/clive-diva-graph-populator'
+require 'fatboy/components/clive-fbd-graph-populator'
+require 'fatboy/components/clive-viz-delta-ingester'
+require 'fatboy/components/clive-viz-delta-maker'
+require 'fatboy/components/clive-viz-graph-populator'
+
+[
+  Fatboy::Components::CliveDivaIngester,
+  Fatboy::Components::CliveDivaGraphPopulator,
+  Fatboy::Components::CliveFbdGraphPopulator,
+  Fatboy::Components::CliveVizDeltaIngester,
+  Fatboy::Components::CliveVizDeltaMaker,
+  Fatboy::Components::CliveVizGraphPopulator,
+].each do |klass|
+  klass.new.add_int(context, resource_graph)
+end
+
+[
+  Fatboy::Components::CliveDivaIngester,
+  Fatboy::Components::CliveDivaGraphPopulator,
+  Fatboy::Components::CliveFbdGraphPopulator,
+  Fatboy::Components::CliveVizDeltaIngester,
+  Fatboy::Components::CliveVizDeltaMaker,
+  Fatboy::Components::CliveVizGraphPopulator,
+].each do |klass|
+  klass.new.add_test(context, resource_graph)
+end
+
+################################################################################
+
+# puts resource_graph.to_graphviz.to_s
+# resource_graph.to_graphviz.output(dot: "/dev/stdout")
+# exit
+
+inverted = resource_graph.invert
+inverted.dump
+$stdout.print "Press return to continue..."
+$stdin.gets
+inverted.make_promise(:teardown).value!
+puts ""
+
+resource_graph.dump
+$stdout.print "Press return to continue..."
+$stdin.gets
+resource_graph.make_promise(:setup).value!
+puts ""
+
+exit
+
+# eof run
