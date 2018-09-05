@@ -17,13 +17,11 @@ module Fatboy
       r,w = IO.pipe
 
       Thread.new do
-        w.close
         r.each_line do |t|
           puts t
         end
       end
 
-      r.close
       w
     end
 

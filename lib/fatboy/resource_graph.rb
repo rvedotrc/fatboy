@@ -22,7 +22,7 @@ module Fatboy
     end
 
     def invert
-      other = self.class.new
+      other = self.class.new(@context)
 
       @resources.each_entry do |k, r|
         reverse_dependencies = @depends_on.keys.select do |dep|

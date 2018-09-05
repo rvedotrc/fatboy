@@ -1,6 +1,7 @@
 require_relative 'fatboy/cloudformation.rb'
 require_relative 'fatboy/context.rb'
 require_relative 'fatboy/cosmos.rb'
+require_relative 'fatboy/logger.rb'
 require_relative 'fatboy/resource_graph.rb'
 require_relative 'fatboy/scm_helper.rb'
 require_relative 'fatboy/spud.rb'
