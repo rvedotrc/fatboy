@@ -26,6 +26,7 @@ resource_graph = Fatboy::ResourceGraph.new(context)
 require 'fatboy/components/clive-diva-ingester'
 require 'fatboy/components/clive-diva-graph-populator'
 require 'fatboy/components/clive-fbd-graph-populator'
+require 'fatboy/components/clive-sqs-metric-keepalive'
 require 'fatboy/components/clive-viz-delta-ingester'
 require 'fatboy/components/clive-viz-delta-maker'
 require 'fatboy/components/clive-viz-graph-populator'
@@ -37,6 +38,7 @@ require 'fatboy/components/clive-viz-graph-populator'
   Fatboy::Components::CliveVizDeltaIngester,
   Fatboy::Components::CliveVizDeltaMaker,
   Fatboy::Components::CliveVizGraphPopulator,
+  Fatboy::Components::CliveSqsMetricKeepalive,
 ].each do |klass|
   klass.new.add_int(context, resource_graph)
 end
@@ -48,8 +50,15 @@ end
   Fatboy::Components::CliveVizDeltaIngester,
   Fatboy::Components::CliveVizDeltaMaker,
   Fatboy::Components::CliveVizGraphPopulator,
+  Fatboy::Components::CliveSqsMetricKeepalive,
 ].each do |klass|
   klass.new.add_test(context, resource_graph)
+end
+
+[
+  Fatboy::Components::CliveSqsMetricKeepalive,
+].each do |klass|
+  klass.new.add_live(context, resource_graph)
 end
 
 ################################################################################
