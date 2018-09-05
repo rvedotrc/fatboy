@@ -1,5 +1,5 @@
 source 'https://rubygems.org/' do
-  gem 'aws-sdk', '~> 3.0'
+  gem 'aws-sdk-cloudformation', '~> 1.0'
   gem 'rosarium'
   gem 'ruby-graphviz'
 end
