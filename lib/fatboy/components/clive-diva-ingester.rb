@@ -56,6 +56,7 @@ module Fatboy
         resources_stack.on_configure do |create_request|
           create_request.merge(
             parameters: {
+              'InputTopicArnExport' => "#{tc_environment}MSSCliveDivaPoller-DivaEventTopic",
               'SirenTopicExport' => "#{tc_environment}CliveMonitoringResources-SirenTopic",
             },
           )
